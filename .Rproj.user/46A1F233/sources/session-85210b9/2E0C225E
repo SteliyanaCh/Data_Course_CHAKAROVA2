@@ -1,7 +1,7 @@
 {
     "id": "2E0C225E",
-    "path": "C:/Users/siska/Desktop/Data_Course_CHAKAROVA2/asg 6 done.R",
-    "project_path": null,
+    "path": "C:/Users/siska/Desktop/Data_Course_CHAKAROVA2/Assignments/Assignment_6/asg 6 done.R",
+    "project_path": "asg 6 done.R",
     "type": "r_source",
     "hash": "556366639",
     "contents": "",
@@ -17,11 +17,11 @@
         "scrollLine": "72"
     },
     "folds": "",
-    "lastKnownWriteTime": 1764975128,
+    "lastKnownWriteTime": 1764975813,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1764975128709,
+    "last_content_update": 1764975813721,
     "read_only": false,
     "read_only_alternatives": []
 }

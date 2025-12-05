@@ -1,0 +1,91 @@
+library(tidyverse)
+library(gganimate)
+
+dat <- read_csv("../../Data/BioLog_Plate_Data.csv")
+
+dat_long <- dat %>%
+  pivot_longer(
+    cols = c(Hr_24, Hr_48, Hr_144),
+    names_to = "Time",
+    values_to = "Absorbance"
+  ) %>%
+  mutate(
+    Time = case_when(
+      Time == "Hr_24"  ~ 24,
+      Time == "Hr_48"  ~ 48,
+      Time == "Hr_144" ~ 144
+    )
+  )
+
+dat_long <- dat_long %>%
+  mutate(SourceType = case_when(
+    grepl("Soil", `Sample ID`, ignore.case = TRUE) ~ "Soil",
+    grepl("Water", `Sample ID`, ignore.case = TRUE) ~ "Water",
+    TRUE ~ "Unknown"
+  ))
+
+plot1 <- dat_long %>%
+  filter(Dilution == 0.1) %>%
+  ggplot(aes(x = Time, y = Absorbance, color = `Sample ID`)) +
+  geom_point() +
+  geom_line() +
+  theme_bw() +
+  labs(
+    title = "Absorbance Over Time at Dilution 0.1",
+    x = "Time (hours)",
+    y = "Absorbance"
+  )
+
+plot1
+ggsave("plot_dilution_0.1.png", plot1, width = 7, height = 5)
+
+itaconic_means <- dat_long %>%
+  filter(Substrate == "Itaconic Acid", Dilution == 0.1) %>%
+  group_by(SourceType, `Sample ID`, Time) %>%
+  summarise(mean_abs = mean(Absorbance, na.rm = TRUE), .groups = "drop")
+
+anim_plot1 <- ggplot(itaconic_means, aes(Time, mean_abs, color = `Sample ID`)) +
+  geom_line() +
+  geom_point(size = 3) +
+  theme_bw() +
+  labs(
+    title = "Itaconic Acid Utilization Over Time",
+    x = "Time (hours)",
+    y = "Mean Absorbance"
+  ) +
+  transition_reveal(Time)
+
+anim1 <- animate(anim_plot1, width = 700, height = 500)
+anim_save("Itaconic_Acid_Animated.gif", anim1)
+
+substrates <- unique(dat_long$Substrate)
+substrates <- substrates[substrates != "Itaconic Acid"]
+
+for(sub in substrates){
+  sub_means <- dat_long %>%
+    filter(Substrate == sub, Dilution == 0.1) %>%
+    group_by(SourceType, `Sample ID`, Time) %>%
+    summarise(mean_abs = mean(Absorbance, na.rm = TRUE), .groups = "drop")
+  
+  anim_plot <- ggplot(sub_means, aes(Time, mean_abs, color = `Sample ID`)) +
+    geom_line() +
+    geom_point(size = 3) +
+    theme_bw() +
+    labs(
+      title = paste(sub, "Utilization Over Time"),
+      x = "Time (hours)",
+      y = "Mean Absorbance"
+    ) +
+    transition_reveal(Time)
+  
+  anim <- animate(anim_plot, width = 700, height = 500)
+  
+  gif_name <- paste0(gsub(" ", "_", sub), "_Animated.gif")
+  anim_save(gif_name, anim)
+}
+
+install.packages("magick")
+
+library(magick)
+img <- image_read("Itaconic_Acid_Animated.gif")
+print(img)
