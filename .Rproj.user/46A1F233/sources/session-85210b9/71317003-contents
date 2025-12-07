@@ -1,0 +1,62 @@
+library(tidyverse)
+library(gganimate)
+dat <- read_csv("../../Data/BioLog_Plate_Data.csv")
+colnames(dat)
+
+
+dat_long <- dat %>%
+  pivot_longer(
+    cols = starts_with("Abs"),
+    names_to = "Time",
+    values_to = "Absorbance"
+  ) %>%
+  mutate(
+    Time = case_when(
+      Time == "Abs24" ~ 24,
+      Time == "Abs48" ~ 48,
+      Time == "Abs144" ~ 144
+    )
+  )
+
+dat_long <- dat_long %>%
+  mutate(SourceType = case_when(
+    grepl("Soil", Sample.ID, ignore.case = TRUE) ~ "Soil",
+    grepl("Water", Sample.ID, ignore.case = TRUE) ~ "Water",
+    TRUE ~ "Unknown"
+  ))
+
+plot1 <- dat_long %>%
+  filter(Dilution == 0.1) %>%
+  ggplot(aes(x = Time, y = Absorbance, color = Sample.ID)) +
+  geom_point() +
+  geom_line() +
+  theme_bw() +
+  labs(
+    title = "Absorbance Over Time at Dilution 0.1",
+    x = "Time (hours)",
+    y = "Absorbance"
+  )
+
+plot1
+ggsave("plot_dilution_0.1.png", plot1, width = 7, height = 5)
+
+itaconic_means <- dat_long %>%
+  filter(Substrate == "Itaconic Acid") %>%
+  group_by(SourceType, Sample.ID, Dilution, Time) %>%
+  summarise(mean_abs = mean(Absorbance, na.rm = TRUE)) %>%
+  ungroup()
+
+anim_plot <- ggplot(itaconic_means, aes(Time, mean_abs, color = Sample.ID)) +
+  geom_line() +
+  geom_point(size = 3) +
+  theme_bw() +
+  labs(
+    title = "Itaconic Acid Utilization Over Time",
+    x = "Time (hours)",
+    y = "Mean absorbance"
+  ) +
+  transition_reveal(Time)
+
+anim <- animate(anim_plot, width = 700, height = 500)
+
+anim_save("Itaconic_Acid_Animated.gif", anim)
