@@ -1,1 +1,3 @@
 Final Project Idea
+Analyze deeper data for Cell-specific protein expression in Alzheimer's disease prefrontal cortex. Make graphs for it and present it n an easier way to comprehend. The data I found and would like to use was from the Dryad website and it contains the full Excel sheet with raw data and ReadMe summary. 
+I created an imaginary plot because i have trouble pulling the data from the excel sheet I downloaded. 
